@@ -5,9 +5,8 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from sklearn.metrics import accuracy_score, confusion_matrix
 
-x = pd.read_csv(r'C:\Users\fox\Desktop\Rafael\Curso deep learning\classificação binária - breast cancer\datasets\entradas_breast.csv')
-
-y = pd.read_csv(r'C:\Users\fox\Desktop\Rafael\Curso deep learning\classificação binária - breast cancer\datasets\saidas_breast.csv')
+x = pd.read_csv('entradas_breast.csv')
+y = pd.read_csv('saidas_breast.csv')
 
 x_treinamento, x_teste, y_treinamento, y_teste = train_test_split(x, y, test_size=0.25)
 
