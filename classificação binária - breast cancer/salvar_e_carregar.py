@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import tensorflow as tf
 
 from tensorflow.keras.models import Sequential 
 from tensorflow.keras.layers import Dense, InputLayer, Dropout
@@ -34,3 +35,11 @@ if previsao:
     print('Malígno')
 else:
     print('Benigno')
+
+classificador.save('classificador_breast.keras')
+
+classificador_novo = tf.keras.models.load_model('classificador_breast.keras')
+
+classificador_novo.summary()
+
+classificador_novo.predict(novo)
