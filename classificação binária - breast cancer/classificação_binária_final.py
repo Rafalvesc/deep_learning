@@ -29,7 +29,7 @@ def criar_rede():
   rede_neural.compile(optimizer = otimizador, loss = 'binary_crossentropy', metrics = ['binary_accuracy'])
   return rede_neural
 
-rede_neural = KerasClassifier(model = criar_rede, epochs = 100, batch_size = 46)
+rede_neural = KerasClassifier(model = criar_rede, epochs = 200, batch_size = 46)
 
 resultados = cross_val_score(estimator=rede_neural, X=X, y=y.values.ravel(), cv=10, scoring='accuracy')
 print(f'Resultados das 10 validações: {resultados}')
