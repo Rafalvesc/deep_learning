@@ -18,4 +18,7 @@ base = base.drop('name', axis = 1)
 base = base.drop('seller', axis = 1)
 base = base.drop('offerType', axis = 1)
 
-print(base)
+base = base[base['price'] > 10]
+base = base.loc[base['price'] < 350000]
+
+print(base.shape)
