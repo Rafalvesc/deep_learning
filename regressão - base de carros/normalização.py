@@ -21,4 +21,13 @@ base = base.drop('offerType', axis = 1)
 base = base[base['price'] > 10]
 base = base.loc[base['price'] < 350000]
 
-print(base.shape)
+valores = {'vehicleType': 'limousine',
+           'gearbox': 'manuell',
+           'model': 'golf',
+           'fuelType': 'benzin',
+           'notRepairedDamage': 'nein'}
+
+base = base.fillna(value = valores)
+
+X = base.iloc[:, 1:12].values
+y = base.iloc[:, 0].values
