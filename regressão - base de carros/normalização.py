@@ -31,3 +31,6 @@ base = base.fillna(value = valores)
 
 X = base.iloc[:, 1:12].values
 y = base.iloc[:, 0].values
+
+onehotencoder = ColumnTransformer(transformers=[("OneHot", OneHotEncoder(), [0, 1, 3, 5, 8, 9, 10])], remainder='passthrough')
+X = onehotencoder.fit_transform(X).toarray()
