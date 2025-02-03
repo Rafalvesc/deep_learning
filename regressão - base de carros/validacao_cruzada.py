@@ -52,7 +52,7 @@ def criar_rede():
   regressor.compile(loss='mean_absolute_error', optimizer='adam', metrics=['mean_absolute_error'])
   return regressor
 
-regressor = KerasRegressor(model = criar_rede, epochs = 1, batch_size = 300)
+regressor = KerasRegressor(model = criar_rede, epochs = 100, batch_size = 300)
 
 resultados = cross_val_score(estimator=regressor, X = X, y = y,cv=5, scoring='neg_mean_absolute_error')
 
