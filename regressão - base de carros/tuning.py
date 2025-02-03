@@ -1,50 +1,32 @@
-import pandas as pd
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import make_scorer
 import tensorflow as tf
-import sklearn
-import scikeras
-import time
-import numpy as np
-
 from scikeras.wrappers import KerasRegressor
 from tensorflow.keras import backend as k
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
-from sklearn.model_selection import cross_val_score
+import time
+import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.model_selection import RandomizedSearchCV
 from sklearn.compose import ColumnTransformer
-from sklearn import metrics
 
-inicio = time.time()
-
+# Carregar os dados
 base = pd.read_csv('autos.csv', encoding='ISO-8859-1')
-
-base = base.drop('dateCrawled', axis=1)
-base = base.drop('dateCreated', axis=1)
-base = base.drop('nrOfPictures', axis=1)
-base = base.drop('postalCode', axis=1)
-base = base.drop('lastSeen', axis=1)
-base = base.drop('name', axis=1)
-base = base.drop('seller', axis=1)
-base = base.drop('offerType', axis=1)
-
+base = base.drop(['dateCrawled', 'dateCreated', 'nrOfPictures', 'postalCode', 'lastSeen', 'name', 'seller', 'offerType'], axis=1)
 base = base[base.price > 10]
 base = base.loc[base.price < 350000]
-
-valores = {'vehicleType': 'limousine',
-           'gearbox': 'manuell',
-           'model': 'golf',
-           'fuelType': 'benzin',
-           'notRepairedDamage': 'nein'}
+valores = {'vehicleType': 'limousine', 'gearbox': 'manuell', 'model': 'golf', 'fuelType': 'benzin', 'notRepairedDamage': 'nein'}
 base = base.fillna(value=valores)
 
 X = base.iloc[:, 1:12].values
 y = base.iloc[:, 0].values
 
+# Pré-processamento com OneHotEncoder
 onehotencoder = ColumnTransformer(transformers=[("OneHot", OneHotEncoder(), [0, 1, 3, 5, 8, 9, 10])], remainder='passthrough')
 X = onehotencoder.fit_transform(X).toarray()
 
-def criar_rede(optimizer='adam', loss='mean_absolute_error'):
+# Função para criar o modelo da rede neural
+def criar_rede(loss_function='mean_absolute_error'):
     k.clear_session()
     regressor = Sequential([
         tf.keras.layers.InputLayer(shape=(316,)),
@@ -52,30 +34,33 @@ def criar_rede(optimizer='adam', loss='mean_absolute_error'):
         tf.keras.layers.Dense(units=158, activation='relu'),
         tf.keras.layers.Dense(units=1, activation='linear')
     ])
-    regressor.compile(loss=loss, optimizer=optimizer, metrics=['mean_absolute_error'])
+    regressor.compile(loss=loss_function, optimizer='adam', metrics=['mean_absolute_error'])
     return regressor
 
+# Wrap do modelo Keras
+regressor = KerasRegressor(model=criar_rede, epochs=20, batch_size=300)
 
-regressor = KerasRegressor(model=criar_rede)
-
-
-parametros_random = {
-    'model__loss': ['mean_absolute_error', 'mean_squared_error', 'huber_loss'], 
-    'model__optimizer': ['adam', 'sgd', 'rmsprop'], 
-    'batch_size': np.random.randint(100, 500, 5),  
-    'epochs': np.random.randint(10, 50, 5)  
+# Definir a grade de hiperparâmetros para a busca
+param_grid = {
+    'model__loss_function': [
+        'mean_squared_error', 
+        'mean_absolute_error', 
+        'mean_absolute_percentage_error', 
+        'mean_squared_logarithmic_error', 
+        'squared_hinge'
+    ]
 }
 
-random_search = RandomizedSearchCV(
-    estimator=regressor,
-    param_distributions=parametros_random,
-    scoring='neg_mean_absolute_error', 
-    cv=5, 
-    n_iter=10, 
-    random_state=42
-)
+# Usar o GridSearchCV para encontrar a melhor função de erro
+grid_search = GridSearchCV(estimator=regressor, param_grid=param_grid, cv=5, scoring='neg_mean_absolute_error')
+inicio = time.time()
 
-random_search.fit(X, y)
+# Realizar a busca
+grid_search.fit(X, y)
 
-print("Melhor combinação de parâmetros:", random_search.best_params_)
-print("Melhor resultado (erro absoluto médio):", abs(random_search.best_score_))
+fim = time.time()
+
+# Resultados da busca
+print(f'Tempo total de execução: {(fim - inicio) / 60:.2f} minutos')
+print(f'Melhor per'da encontrada: {grid_search.best_score_}')
+print(f'Melhor função de erro: {grid_search.best_params_}')
